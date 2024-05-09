@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  nextcloud: # Nextcloud service
+    image: nextcloud:latest
+    container_name: nextcloud
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - 8080:80
+    volumes:
+      - ./nextcloud:/var/www/html
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=nextcloud
+  
+  mysql: # MySQL service
+    image: mariadb:latest 
+    container_name: mysql 
+    restart: always 
+    volumes: 
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=shishRenzi
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=nextcloud
+
+  locust: # Locust service
+    image: locustio/locust
+    container_name: locust
+    ports:
+      - 8089:8089
+    volumes:
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host=http://nextcloud:80 --users 25 --spawn-rate 5 --run-time 2m
